@@ -4,6 +4,9 @@ import pickle
 import torch
 import torch.nn.functional as F
 import torch.utils.data as data
+import scipy.ndimage.interpolation as inter
+import random
+
 
 from torch.autograd import Variable
 
@@ -59,6 +62,17 @@ class Dataset(data.Dataset):
 
         # normalize
         vol = (vol - MEAN) / STDDEV
+
+        # augment
+        rand_angle = random.randint(-25, 25)
+        rand_h_shift = random.randint(-25, 25)
+        rand_v_shift = random.randint(-25, 25)
+        rand_flip = random.randint(0, 1)
+
+        vol = inter.shift(vol, (rand_h_shift, rand_v_shift, 0), order=5, mode='nearest')
+        vol = inter.rotate(vol, rand_angle, reshape=False, order=5, mode='nearest')
+        if rand_flip == 0:
+            vol = np.fliplr(vol)
         
         # convert to RGB
         vol = np.stack((vol,)*3, axis=1)
